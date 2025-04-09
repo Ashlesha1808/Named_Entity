@@ -2,7 +2,7 @@ import streamlit as st
 import spacy
 from spacy import displacy
 
-# Ensure spaCy model is available on Streamlit Cloud
+# Download and load spaCy model (works on Streamlit Cloud)
 try:
     nlp = spacy.load("en_core_web_sm")
 except OSError:
@@ -10,56 +10,57 @@ except OSError:
     spacy.cli.download("en_core_web_sm")
     nlp = spacy.load("en_core_web_sm")
 
-# Set Streamlit page settings
+# Page config
 st.set_page_config(page_title="NER App", layout="centered")
 
-# App Title
+# Title
 st.markdown("<h1 style='color:#2c3e50;'>🧠 Named Entity Recognition (NER)</h1>", unsafe_allow_html=True)
-st.markdown("Enter a paragraph of text. This app will detect **names**, **locations**, and **organizations**, including Indian names written in English!")
+st.markdown("Enter English text with Indian names. This app extracts **People**, **Locations**, and **Organizations** using spaCy.")
 
-# Text input
-text_input = st.text_area("✏️ Enter your text below:", 
-                          "Narendra Modi visited Bengaluru and met ISRO scientists at Infosys HQ.")
+# Input area
+text_input = st.text_area("✍️ Enter your text here:", 
+    "Ashlesha Chikhale met Narendra Modi at MITWPU in Pune. Infosys and ISRO were discussed.")
 
-# If the text area has text and button is clicked
+# Entity extraction button
 if st.button("🚀 Extract Entities") and text_input.strip() != "":
     doc = nlp(text_input)
 
-    # Dictionary to collect entities
+    # Dictionary for entity storage
     entity_dict = {"PERSON": [], "GPE": [], "ORG": []}
 
-    # Extract and group entities
     for ent in doc.ents:
         if ent.label_ in entity_dict:
             entity_dict[ent.label_].append(ent.text)
 
-    # Show results
     st.markdown("## 🧾 Extracted Entities")
 
     if entity_dict["PERSON"]:
-        st.markdown("### 🧑 People:")
+        st.markdown("### 👤 People")
         for person in set(entity_dict["PERSON"]):
             st.markdown(f"- {person}")
 
     if entity_dict["GPE"]:
-        st.markdown("### 🌍 Locations:")
-        for place in set(entity_dict["GPE"]):
-            st.markdown(f"- {place}")
+        st.markdown("### 🗺️ Locations")
+        for location in set(entity_dict["GPE"]):
+            st.markdown(f"- {location}")
 
     if entity_dict["ORG"]:
-        st.markdown("### 🏢 Organizations:")
+        st.markdown("### 🏢 Organizations")
         for org in set(entity_dict["ORG"]):
             st.markdown(f"- {org}")
 
-    if not any([entity_dict["PERSON"], entity_dict["GPE"], entity_dict["ORG"]]):
-        st.warning("No entities found in the text.")
+    if not any(entity_dict.values()):
+        st.warning("No named entities found!")
 
-    # Bonus: Visual display
-    with st.expander("🔍 Visual Highlight (Entities)"):
+    # Visual displacy output
+    with st.expander("🔍 Highlight Entities in Text"):
         html = displacy.render(doc, style="ent", jupyter=False)
-        st.write(f"<div style='background-color:#f9f9f9;padding:10px;border-radius:10px'>{html}</div>", unsafe_allow_html=True)
+        st.write(
+            f"<div style='background-color:#f9f9f9;padding:10px;border-radius:10px'>{html}</div>", 
+            unsafe_allow_html=True
+        )
 
-# Footer
+# Footer with author details
 st.markdown("---")
 st.markdown(
     """
