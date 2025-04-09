@@ -2,8 +2,13 @@ import streamlit as st
 import spacy
 from spacy import displacy
 
-# Load spaCy English model
-nlp = spacy.load("en_core_web_sm")
+# Ensure spaCy model is available on Streamlit Cloud
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    import spacy.cli
+    spacy.cli.download("en_core_web_sm")
+    nlp = spacy.load("en_core_web_sm")
 
 # Set Streamlit page settings
 st.set_page_config(page_title="NER App", layout="centered")
